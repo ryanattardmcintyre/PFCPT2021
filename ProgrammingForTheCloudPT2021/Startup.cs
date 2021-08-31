@@ -12,6 +12,8 @@ using ProgrammingForTheCloudPT2021.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ProgrammingForTheCloudPT2021.DataAccess.Interfaces;
+using ProgrammingForTheCloudPT2021.DataAccess.Repositories;
 
 namespace ProgrammingForTheCloudPT2021
 {
@@ -66,6 +68,7 @@ namespace ProgrammingForTheCloudPT2021
                 options.ClientSecret = "oHM~N3zF0BKd~zY_~1KWp-q1gsS7HSPxR~";
             });
 
+            services.AddScoped<IFirestoreAccess, FireStoreAccess>();
 
             //6d13ed3d-a32d-415a-8aa6-c863a3ae6e30
             //724e2ea2-e79c-4101-8f28-839f46920c8e
