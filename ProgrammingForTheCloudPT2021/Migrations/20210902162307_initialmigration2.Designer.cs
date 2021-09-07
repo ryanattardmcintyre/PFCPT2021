@@ -10,8 +10,8 @@ using ProgrammingForTheCloudPT2021.Data;
 namespace ProgrammingForTheCloudPT2021.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210826112509_AddingItemToSchema")]
-    partial class AddingItemToSchema
+    [Migration("20210902162307_initialmigration2")]
+    partial class initialmigration2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -236,6 +236,19 @@ namespace ProgrammingForTheCloudPT2021.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("ProgrammingForTheCloudPT2021.Models.ItemDictionary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ItemsDictionary");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

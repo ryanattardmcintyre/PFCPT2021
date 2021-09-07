@@ -10,8 +10,8 @@ using ProgrammingForTheCloudPT2021.Data;
 namespace ProgrammingForTheCloudPT2021.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210826111816_initialschema")]
-    partial class initialschema
+    [Migration("20210902161856_initialmigration")]
+    partial class initialmigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -217,6 +217,25 @@ namespace ProgrammingForTheCloudPT2021.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("ProgrammingForTheCloudPT2021.Models.Item", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -69,6 +69,8 @@ namespace ProgrammingForTheCloudPT2021
             });
 
             services.AddScoped<IFirestoreAccess, FireStoreAccess>();
+            services.AddScoped<ICacheAccess, CacheAccess>();
+            services.AddScoped<IPubSubAccess, PubSubAccess>();
 
             //6d13ed3d-a32d-415a-8aa6-c863a3ae6e30
             //724e2ea2-e79c-4101-8f28-839f46920c8e

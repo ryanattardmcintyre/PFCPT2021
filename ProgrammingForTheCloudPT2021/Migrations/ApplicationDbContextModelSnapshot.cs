@@ -236,6 +236,19 @@ namespace ProgrammingForTheCloudPT2021.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("ProgrammingForTheCloudPT2021.Models.ItemDictionary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ItemsDictionary");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)

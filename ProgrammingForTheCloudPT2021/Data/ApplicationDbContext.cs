@@ -15,5 +15,6 @@ namespace ProgrammingForTheCloudPT2021.Data
         }
 
         public DbSet<Item> Items { get; set; }
+        public DbSet<ItemDictionary> ItemsDictionary {get;set;}
     }
 }
