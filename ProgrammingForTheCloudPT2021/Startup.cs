@@ -14,16 +14,20 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProgrammingForTheCloudPT2021.DataAccess.Interfaces;
 using ProgrammingForTheCloudPT2021.DataAccess.Repositories;
+using Google.Cloud.Diagnostics.AspNetCore;
 
 namespace ProgrammingForTheCloudPT2021
 {
     public class Startup
     {
         private IWebHostEnvironment _host;
+        string projectId;
         public Startup(IConfiguration configuration, IWebHostEnvironment host)
         {
             Configuration = configuration;
             _host = host;
+
+            projectId = configuration.GetSection("ProjectId").Value;
         }
 
         public IConfiguration Configuration { get; }
@@ -71,9 +75,17 @@ namespace ProgrammingForTheCloudPT2021
             services.AddScoped<IFirestoreAccess, FireStoreAccess>();
             services.AddScoped<ICacheAccess, CacheAccess>();
             services.AddScoped<IPubSubAccess, PubSubAccess>();
+            services.AddScoped<ILogAccess, LogsAccess>();
 
             //6d13ed3d-a32d-415a-8aa6-c863a3ae6e30
             //724e2ea2-e79c-4101-8f28-839f46920c8e
+
+            services.AddGoogleExceptionLogging(options =>
+            {
+                options.ProjectId = projectId;
+                options.ServiceName = "PFCService";
+                options.Version = "0.01";
+            });
 
 
         }
@@ -92,6 +104,8 @@ namespace ProgrammingForTheCloudPT2021
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseGoogleExceptionLogging();
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 

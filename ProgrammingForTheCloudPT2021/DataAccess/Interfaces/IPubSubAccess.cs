@@ -9,7 +9,7 @@ namespace ProgrammingForTheCloudPT2021.DataAccess.Interfaces
 {
     public interface IPubSubAccess
     {
-        Task<string> PublishEmail(MyMailMessage mail);
+        Task<string> PublishEmail(MyMailMessage mail, string category);
         Task<MailMessageWithAckId> ReadEmail(); //FIFO 
 
         void AcknowledgeMessage(string ackId);

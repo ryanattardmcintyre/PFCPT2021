@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ProgrammingForTheCloudPT2021.DataAccess.Interfaces;
 using ProgrammingForTheCloudPT2021.Models;
 
@@ -12,22 +13,28 @@ namespace ProgrammingForTheCloudPT2021.Controllers
     public class PubSubController : Controller
     {
         private IPubSubAccess _pubSubAccess;
-        public PubSubController(IPubSubAccess pubSubAccess)
+        private ILogAccess _log;
+        public PubSubController(IPubSubAccess pubSubAccess, ILogAccess log)
         {
+            _log = log;
             _pubSubAccess = pubSubAccess;
         }
 
-        public async Task<IActionResult> SendMail()
+        public async Task<IActionResult> SendMail(string category)
         {
+            _log.Log("Pushing a mail into a queue");
+
+            var d = DateTime.Now.ToShortTimeString();
             MyMailMessage mm = new MyMailMessage
             {
-                Body = "This is a test body for pub sub " + DateTime.Now.ToShortTimeString(),
-                To = "ryanattard@gmail.com"
+                Body = "This is a test body for pub sub " + d,
+                To = "ryanattarddemo@gmail.com"
             };
 
-            await  _pubSubAccess.PublishEmail(mm);
+            await  _pubSubAccess.PublishEmail(mm, category);
+            _log.Log("Pushed mail message onto queue. Data: " + JsonConvert.SerializeObject(mm));
 
-            return Content("done");
+            return Content("done "+ d);
         }
 
 

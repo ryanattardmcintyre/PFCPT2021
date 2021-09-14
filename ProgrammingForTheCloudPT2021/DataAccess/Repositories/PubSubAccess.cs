@@ -25,11 +25,11 @@ namespace ProgrammingForTheCloudPT2021.DataAccess.Repositories
             projectId = config.GetSection("ProjectId").Value;
         }
 
-        public async Task<string> PublishEmail(MyMailMessage mail)
+        public async Task<string> PublishEmail(MyMailMessage mail, string category)
         {
 
             //queue = topic
-            TopicName topic = new TopicName(projectId, "myQueue2");
+            TopicName topic = new TopicName(projectId, "emailQueue");
 
             PublisherClient client = await  PublisherClient.CreateAsync(topic);
 
@@ -42,7 +42,7 @@ namespace ProgrammingForTheCloudPT2021.DataAccess.Repositories
                 //OrderingKey = "1",
                 Attributes =
                 {
-                    { "category" , "admin"}
+                    { "category" ,category}
                 }
             };
 
@@ -66,8 +66,10 @@ namespace ProgrammingForTheCloudPT2021.DataAccess.Repositories
 
                 if (response.ReceivedMessages.Count > 0)
                 {
-                    string text = response.ReceivedMessages[0].Message.Data.ToStringUtf8();
 
+                    
+                    string text = response.ReceivedMessages[0].Message.Data.ToStringUtf8();
+                    
                     var mm = JsonConvert.DeserializeObject<MyMailMessage>(text);
 
                     mmWithAckId = new MailMessageWithAckId
@@ -106,6 +108,11 @@ namespace ProgrammingForTheCloudPT2021.DataAccess.Repositories
                 // If acknowledgement required, send to server.
                      
                   subscriberClient.Acknowledge(subName, new List<string>() { ackId });
+                
+                  //publish in a topic the details to be sent as a receipt to the respective passenger
+                  //link to the image of the car going for the passenger
+                  //name of the driver
+                  //the email of the passenger whom we 're going to send the email....
                     
             }
             catch (RpcException ex) when (ex.Status.StatusCode == StatusCode.Unavailable)
