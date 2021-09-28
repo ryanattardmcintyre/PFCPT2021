@@ -15,6 +15,9 @@ using Microsoft.Extensions.Hosting;
 using ProgrammingForTheCloudPT2021.DataAccess.Interfaces;
 using ProgrammingForTheCloudPT2021.DataAccess.Repositories;
 using Google.Cloud.Diagnostics.AspNetCore;
+using Microsoft.AspNetCore.Http;
+using Google.Cloud.SecretManager.V1;
+using Newtonsoft.Json;
 
 namespace ProgrammingForTheCloudPT2021
 {
@@ -28,6 +31,12 @@ namespace ProgrammingForTheCloudPT2021
             _host = host;
 
             projectId = configuration.GetSection("ProjectId").Value;
+
+
+            string prefixAbsolutePath = _host.ContentRootPath;
+            System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
+                prefixAbsolutePath + "/pfcpt2021-1b9c895bcae7.json"
+                );
         }
 
         public IConfiguration Configuration { get; }
@@ -39,12 +48,14 @@ namespace ProgrammingForTheCloudPT2021
             //removing identity and leaving only external authentication:
             //https://stackoverflow.com/questions/48120508/net-core-external-authentication-without-asp-net-identity
 
-
-            /*   string prefixAbsolutePath = _host.ContentRootPath;
-               System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS",
-                   prefixAbsolutePath + "/pfcpt2021-1b9c895bcae7.json"
-                   );
-            */
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+                options.OnAppendCookie = cookieContext =>
+                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+                options.OnDeleteCookie = cookieContext =>
+                    CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
+            });
 
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -54,15 +65,32 @@ namespace ProgrammingForTheCloudPT2021
             //994079389678-hq78hmr1sqrmmmjm6qvcoikoqr6h0ku6.apps.googleusercontent.com
             //Ob0Gv8xXMMYTHH9YpMmLkIRW
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddControllersWithViews();
-            services.AddRazorPages();
+            //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+            //    .AddEntityFrameworkStores<ApplicationDbContext>();
+            //services.AddControllersWithViews();
+            //services.AddRazorPages();
+
+            services.AddIdentity<IdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
+           .AddDefaultUI()
+           .AddEntityFrameworkStores<ApplicationDbContext>()
+           .AddDefaultTokenProviders();
+
+
+            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
+
+            SecretVersionName secretVersionName = new SecretVersionName(projectId, "pfcdemo1", "1");
+
+            AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
+
+            string str = result.Payload.Data.ToStringUtf8();
+            dynamic myPass = JsonConvert.DeserializeObject(str);
+            string clientSecret = myPass.google_secret;
+
 
             services.AddAuthentication().AddGoogle(options =>
                    {
                        options.ClientId = "994079389678-hq78hmr1sqrmmmjm6qvcoikoqr6h0ku6.apps.googleusercontent.com";
-                       options.ClientSecret = "Ob0Gv8xXMMYTHH9YpMmLkIRW";
+                       options.ClientSecret = clientSecret;
                    });
 
 
@@ -93,24 +121,24 @@ namespace ProgrammingForTheCloudPT2021
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-            app.UseGoogleExceptionLogging();
-
+            //}
+            //else
+            //{
+            //    app.UseExceptionHandler("/Home/Error");
+            //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            //    app.UseHsts();
+            //} 
             app.UseHttpsRedirection();
+            app.UseGoogleExceptionLogging();
+      
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 
@@ -122,5 +150,22 @@ namespace ProgrammingForTheCloudPT2021
                 endpoints.MapRazorPages();
             });
         }
+
+
+        private void CheckSameSite(HttpContext httpContext, CookieOptions options)
+        {
+            if (options.SameSite == SameSiteMode.None)
+            {
+                var userAgent = httpContext.Request.Headers["User-Agent"].ToString();
+                // TODO: Use your User Agent library of choice here.
+
+                // For .NET Core < 3.1 set SameSite = (SameSiteMode)(-1)
+                options.SameSite = SameSiteMode.Unspecified;
+
+            }
+        }
+
+
+
     }
 }

@@ -10,6 +10,7 @@ using ProgrammingForTheCloudPT2021.Models;
 
 namespace ProgrammingForTheCloudPT2021.Controllers
 {
+    
     public class CacheController : Controller
     {
         private ApplicationDbContext _context;
